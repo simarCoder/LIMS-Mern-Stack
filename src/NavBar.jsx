@@ -1,24 +1,58 @@
+import {
+  LayoutDashboard,
+  Users,
+  FlaskConical,
+  ClipboardList,
+  Stethoscope,
+  Package,
+  Settings,
+} from "lucide-react";
+
 function NavBar({ setNavItem }) {
   const navItems = [
-    "Dashboard",
-    "Patients",
-    "Samples",
-    "Tests",
-    "Diagnosis",
-    "Collection",
-    "Settings",
+    {
+      name: "Dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Patients",
+      icon: Users,
+    },
+    {
+      name: "Samples",
+      icon: FlaskConical,
+    },
+    {
+      name: "Tests",
+      icon: ClipboardList,
+    },
+    {
+      name: "Diagnosis",
+      icon: Stethoscope,
+    },
+    {
+      name: "Collection",
+      icon: Package,
+    },
+    {
+      name: "Settings",
+      icon: Settings,
+    },
   ];
   return (
-    <nav className="min-h-screen w-40 bg-emerald-300 p justify-center ">
-      <div>LIMS</div>
+    <nav className="min-h-screen w-50 bg-(--bg-sidebar) p-3 align-center shadow-2xs m-3 rounded-2xl flex flex-col ">
+      <div className="text-(--text-primary) text-3xl items-center text-center m-1">
+        LIMS
+      </div>
+      <hr className="text-white m-1" />
       <ul>
-        {navItems.map((items) => (
+        {navItems.map((item) => (
           <li
-            key={items}
-            onClick={() => setNavItem(items)}
-            className="bg-fuchsia-300 m-2 p-2 shadow-2xl shadow-black border-2 border-fuchsia-950 rounded-xl cursor-pointer"
+            key={item.name}
+            onClick={() => setNavItem(item.name)}
+            className=" m- p-2 shadow-black rounded-xl cursor-pointer text-(--text-primary) hover:bg-(--bg-card-hover)"
           >
-            {items}
+            {item.icon} {item.name}
           </li>
         ))}
       </ul>
