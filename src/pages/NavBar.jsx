@@ -8,6 +8,8 @@ import {
   Settings,
 } from "lucide-react";
 
+import NavItem from "../components/NavItem";
+
 function NavBar({ setNavItem }) {
   const navItems = [
     {
@@ -40,20 +42,22 @@ function NavBar({ setNavItem }) {
     },
   ];
   return (
-    <nav className="min-h-screen w-50 bg-(--bg-sidebar) p-3 align-center shadow-2xs m-3 rounded-2xl flex flex-col ">
+    <nav
+      className="min-h-screen bg-(--bg-sidebar) p-2 align-center shadow-2xs m-3 rounded-2xl flex flex-col "
+      id="navBar"
+    >
       <div className="text-(--text-primary) text-3xl items-center text-center m-1">
         LIMS
       </div>
-      <hr className="text-white m-1" />
+      <hr className="text-white m-2" />
       <ul>
         {navItems.map((item) => (
-          <li
+          <NavItem
             key={item.name}
+            item={item}
+            active={NavItem === item.name}
             onClick={() => setNavItem(item.name)}
-            className=" m- p-2 shadow-black rounded-xl cursor-pointer text-(--text-primary) hover:bg-(--bg-card-hover)"
-          >
-            {item.icon} {item.name}
-          </li>
+          />
         ))}
       </ul>
     </nav>
