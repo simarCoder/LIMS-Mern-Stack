@@ -19,9 +19,13 @@ async function request(endpoint, options = {}) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      const err = new Error(
-        data.error || `Request failed (HTTP ${response.status})`,
-      );
+      let defaultMsg = `Request failed (HTTP ${response.status})`;
+      if (response.status === 404) {
+        defaultMsg = "Backend server not connected or endpoint not found (HTTP 404). Please check backend connection.";
+      } else if (response.status === 502 || response.status === 504) {
+        defaultMsg = "Backend server is offline or unreachable (Bad Gateway). Please check if backend is running.";
+      }
+      const err = new Error(data.error || defaultMsg);
       err.status = response.status;
       throw err;
     }
