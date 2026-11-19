@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tunnel": "bin\\cloudflared.exe tunnel --url http://localhost:5173",
+    "tunnel:cloudflare": "bin\\cloudflared.exe tunnel --url http://localhost:5173",
+    "tunnel:ssh": "ssh -R 80:localhost:5173 localhost.run",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.3",
     "@tailwindcss/vite": "^4.3.3",
     "lucide-react": "^1.52.0",
     "react": "^19.2.8",

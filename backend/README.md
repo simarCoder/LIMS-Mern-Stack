@@ -9,7 +9,7 @@
 
 ## Install and run (Windows PowerShell)
 ```powershell
-cd C:\Users\PC\Documents\react-study\LIMS\backend
+cd backend
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python app.py

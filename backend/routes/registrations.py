@@ -15,11 +15,24 @@ def create_registration():
     try:
         if not isinstance(data, dict):
             raise ValueError("A valid JSON object is required.")
-        patient_values = validate_patient_payload(data.get("patient"))
+        patient_payload = data.get("patient") or {}
+        sample_collected = data.get("sample_collected", patient_payload.get("sample_collected", False))
+        patient_payload["sample_collected"] = sample_collected
+
+        patient_values = validate_patient_payload(patient_payload)
         patient_dict = insert_patient(connection, patient_values)
         patient_row = get_patient(connection, patient_dict["id"])
+        payment_mode = data.get("payment_mode", "Cash")
+        payment_status = data.get("payment_status", "Paid")
+        paid_amount = data.get("paid_amount")
+        test_rates = data.get("test_rates")
         order_dict = create_order_for_patient(
-            connection, patient_row, data.get("head_test_ids"), data.get("discount", 0)
+            connection, patient_row, data.get("head_test_ids"), data.get("discount", 0),
+            sample_collected=sample_collected,
+            payment_mode=payment_mode,
+            payment_status=payment_status,
+            paid_amount=paid_amount,
+            test_rates=test_rates,
         )
         connection.commit()
         return jsonify({

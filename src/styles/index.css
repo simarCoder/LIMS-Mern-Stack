@@ -1,9 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
-/* @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-} */
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
 .no-spinners {
   -moz-appearance: textfield;
@@ -14,10 +14,11 @@
   -webkit-appearance: none;
   margin: 0;
 }
+
 :root {
-  font-family: var(--font-sans);
-  color: #1e293b;
-  background: #f1f5f9;
+  font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -29,30 +30,88 @@
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
 }
+
 button,
 input,
 select,
 textarea {
   font: inherit;
 }
+
 button {
   cursor: pointer;
 }
+
 input,
 select,
 textarea {
   min-width: 0;
 }
+
 :focus-visible {
   outline: 2px solid #0d9488;
   outline-offset: 2px;
 }
+
 ::selection {
   background: #ccfbf1;
   color: #134e4a;
+}
+
+/* Subtle Micro-Animations & Transitions Across Application */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Smooth transition defaults for buttons, badges & interactive elements */
+button, a, input, select, textarea {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Force pure white background on printing */
+@media print {
+  @page {
+    size: A5 portrait;
+    margin: 8mm;
+    background: #ffffff !important;
+  }
+  html, body, :root, #root, #root > div, main, div, section, article {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    box-shadow: none !important;
+  }
 }

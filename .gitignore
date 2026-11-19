@@ -24,7 +24,21 @@ dist-ssr
 *.sw?
 
 # Python
+.env
+.env.*
 backend/.env
 backend/.venv/
 backend/__pycache__/
 *.py[cod]
+
+# Databases & local state
+db/
+*.db
+*.sqlite
+*.sqlite3
+bin/
+
+
+share_lims_public.bat
+start_lims.bat
+update_lims.bat
