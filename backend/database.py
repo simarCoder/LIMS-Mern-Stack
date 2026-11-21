@@ -688,13 +688,6 @@ def init_db():
                     (lab_id, uname, phash, role, dname, now),
                 )
 
-        # Sync existing orders with current test catalogue definitions
-        try:
-            from services.tests_service import sync_all_orders_with_catalogue
-            sync_all_orders_with_catalogue(connection)
-        except Exception:
-            pass
-
         connection.commit()
     finally:
         connection.close()
