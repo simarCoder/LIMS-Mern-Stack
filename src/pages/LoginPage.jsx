@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Microscope,
   Building2,
@@ -8,8 +8,11 @@ import {
   AlertCircle,
   ShieldCheck,
   CheckCircle2,
+  Activity,
+  RotateCw,
+  Server,
 } from "lucide-react";
-import { fetchLabByCode } from "../services/api";
+import { fetchLabByCode, checkServerHealth } from "../services/api";
 
 export default function LoginPage({ onLoginSuccess, authError: initialError = "" }) {
   const [labCode, setLabCode] = useState("LAB01");
@@ -17,10 +20,64 @@ export default function LoginPage({ onLoginSuccess, authError: initialError = ""
   const [isLookingUpLab, setIsLookingUpLab] = useState(false);
   const [labFound, setLabFound] = useState(false);
 
+  // Server health state: 'checking' | 'online' | 'waking' | 'offline'
+  const [serverStatus, setServerStatus] = useState("checking");
+  const [wakeElapsed, setWakeElapsed] = useState(0);
+  const pollTimerRef = useRef(null);
+  const elapsedTimerRef = useRef(null);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(initialError);
+
+  // Health probe routine
+  const probeHealth = useCallback(async () => {
+    const res = await checkServerHealth();
+    if (res.ok) {
+      setServerStatus("online");
+      setWakeElapsed(0);
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      return true;
+    } else {
+      setServerStatus("waking");
+      return false;
+    }
+  }, []);
+
+  // Monitor server health & auto-wake polling
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initialCheck() {
+      const isUp = await probeHealth();
+      if (!isUp && isMounted) {
+        // Start counter
+        setWakeElapsed(1);
+        elapsedTimerRef.current = setInterval(() => {
+          setWakeElapsed((prev) => prev + 1);
+        }, 1000);
+
+        // Poll every 3.5 seconds
+        pollTimerRef.current = setInterval(async () => {
+          const ok = await probeHealth();
+          if (ok && isMounted) {
+            clearInterval(pollTimerRef.current);
+            clearInterval(elapsedTimerRef.current);
+          }
+        }, 3500);
+      }
+    }
+
+    initialCheck();
+
+    return () => {
+      isMounted = false;
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, [probeHealth]);
 
   function handleLabCodeChange(val) {
     const uppercaseVal = val.toUpperCase();
@@ -31,7 +88,7 @@ export default function LoginPage({ onLoginSuccess, authError: initialError = ""
     }
   }
 
-  // Debounced lookup of Lab Name by Lab Code
+  // Lookup of Lab Name by Lab Code (also triggers when server comes online)
   useEffect(() => {
     const code = labCode.trim().toUpperCase();
     if (!code) return;
@@ -62,7 +119,7 @@ export default function LoginPage({ onLoginSuccess, authError: initialError = ""
       active = false;
       clearTimeout(timer);
     };
-  }, [labCode]);
+  }, [labCode, serverStatus]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -81,6 +138,11 @@ export default function LoginPage({ onLoginSuccess, authError: initialError = ""
     }
     if (!password) {
       setErrorMessage("Please enter your Password.");
+      return;
+    }
+
+    if (serverStatus === "waking") {
+      setErrorMessage("Cloud backend is currently waking up from sleep mode (~20s). Please wait for the indicator to turn green.");
       return;
     }
 
@@ -129,10 +191,47 @@ export default function LoginPage({ onLoginSuccess, authError: initialError = ""
             <div>
               <h2 className="text-base font-bold text-white tracking-tight">Sign In</h2>
             </div>
-            <span className="rounded-md bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-400 border border-teal-500/25">
-              Secure Session
-            </span>
+            <div className="flex items-center gap-2">
+              {serverStatus === "online" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/25">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  Server Online
+                </span>
+              )}
+              {serverStatus === "waking" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-400 border border-amber-500/25 animate-pulse">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                  Waking Up ({wakeElapsed}s)...
+                </span>
+              )}
+              {serverStatus === "checking" && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400 border border-zinc-700">
+                  <Activity size={10} className="animate-spin text-teal-400" />
+                  Connecting...
+                </span>
+              )}
+              <span className="rounded-md bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-400 border border-teal-500/25">
+                Secure Session
+              </span>
+            </div>
           </div>
+
+          {/* Cloud Auto-Wake Notice */}
+          {serverStatus === "waking" && (
+            <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+              <div className="flex items-start gap-2.5">
+                <RotateCw size={16} className="shrink-0 text-amber-400 animate-spin mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-amber-300">
+                    Cloud Backend Waking Up (~20-25s)
+                  </p>
+                  <p className="text-[11px] text-amber-200/80 leading-relaxed">
+                    Render free-tier instances sleep after inactivity. We are waking it up automatically ({wakeElapsed}s elapsed). Your lab will connect as soon as it boots!
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Error Message */}
           {errorMessage && (

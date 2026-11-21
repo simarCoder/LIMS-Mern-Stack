@@ -42,6 +42,26 @@ async function request(endpoint, options = {}) {
 }
 
 // ==========================================
+// Health & Cloud Status API
+// ==========================================
+
+export const checkServerHealth = async () => {
+  try {
+    const response = await fetch(`${API_URL}/api/health`, {
+      method: "GET",
+      cache: "no-store",
+    });
+    if (response.ok) {
+      const data = await response.json().catch(() => ({}));
+      return { ok: true, data };
+    }
+    return { ok: false, status: response.status };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+};
+
+// ==========================================
 // Authentication & Laboratory Session API
 // ==========================================
 
